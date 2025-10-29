@@ -1,0 +1,167 @@
+openapi: 3.0.3
+info:
+  title: population API
+  description: API для управления популяцией City
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:5737/api/v1/genocide
+
+paths:
+  /count/{id1}/{id2}/{id3}:
+    get:
+      tags:
+        - genocide
+      summary: Рассчитать суммарное население трех городов
+      description: Возвращает сумму населения трех городов с указанными id
+      parameters:
+        - name: id1
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: id первого города
+        - name: id2
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: id второго города
+        - name: id3
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: id третьего города
+      responses:
+        '200':
+          description: Успешный расчет суммарного населения
+          content:
+            application/xml:
+              schema:
+                type: long
+                xml:
+                  name: PopulationSum
+                example: 1000000
+        '400':
+          description: Неверные параметры запроса
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '404':
+          description: Один или несколько городов не найдены
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        '503':
+          description: Сервис недоступен
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Error503'
+        default:
+          description: Непредвиденная ошибка
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorDefault'
+
+  /deport/{id-from}/{id-to}:
+    post:
+      tags:
+        - genocide
+      summary: Депортировать население между городами
+      description: Перемещает все население из города-источника в город-назначение
+      parameters:
+        - name: id-from
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: id города-источника
+        - name: id-to
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: id города-назначения
+      responses:
+        '200':
+          description: Население депортировано
+          content:
+            application/xml:
+              schema:
+                type: long
+                xml:
+                  name: MovedPopulation
+                description: Количество перемещенного населения
+                example: 100000
+        '400':
+          description: Неверные параметры запроса
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '404':
+          description: Один или оба города не найдены
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        '503':
+          description: Сервис недоступен
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Error503'
+        default:
+          description: Непредвиденная ошибка
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorDefault'
+
+components:
+  schemas:
+    Error400:
+      xml:
+        name: message
+      type: string
+      example: "Ошибка в url запроса"
+      description: Сообщение об ошибке
+    Error404:
+      xml:
+        name: message
+      type: string
+      example: "Объект не найден"
+      description: Сообщение об ошибке
+    Error500:
+      xml:
+        name: message
+      type: string
+      example: "Ошибка сервера"
+      description: Сообщение об ошибке
+    Error503:
+      xml:
+        name: message
+      type: string
+      example: "Сервис недоступен"
+      description: Сообщение об ошибке
+    ErrorDefault:
+      xml:
+        name: message
+      type: string
+      example: "Непридвиденная ошибка"
+      description: Сообщение об ошибке
