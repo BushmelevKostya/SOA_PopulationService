@@ -1,46 +1,68 @@
 package itmo.populationservice.service;
 
+import itmo.populationservice.client.CityServiceClient;
+import itmo.populationservice.exception.BadRequestException;
 import itmo.populationservice.exception.NotFoundException;
-import itmo.populationservice.model.entity.Population;
-import itmo.populationservice.repository.PopulationRepository;
-import jakarta.transaction.Transactional;
+import itmo.populationservice.exception.ServiceUnavailableException;
+import itmo.populationservice.mapper.CityMapper;
+import itmo.populationservice.model.dto.CityCreateRequestDto;
+import itmo.populationservice.model.dto.CityDto;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 
 @Service
 public class PopulationService {
-    private final PopulationRepository populationRepository;
+    private final CityServiceClient cityServiceClient;
+    private final CityMapper cityMapper;
 
-    public PopulationService(PopulationRepository populationRepository) {
-        this.populationRepository = populationRepository;
+    public PopulationService(CityServiceClient cityServiceClient, CityMapper cityMapper) {
+        this.cityServiceClient = cityServiceClient;
+        this.cityMapper = cityMapper;
     }
 
-    @Transactional
     public Long calculateSum(Long id1, Long id2, Long id3) {
-        return getPopulationCount(id1) +
-                  getPopulationCount(id2) +
-                  getPopulationCount(id3);
+        validateIds(id1, id2, id3);
+
+        try {
+            CityDto city1 = cityServiceClient.getCityById(id1);
+            CityDto city2 = cityServiceClient.getCityById(id2);
+            CityDto city3 = cityServiceClient.getCityById(id3);
+
+            return (long) (city1.getPopulation() + city2.getPopulation() + city3.getPopulation());
+        } catch (ResourceAccessException e) {
+            throw new ServiceUnavailableException("Сервис недоступен");
+        }
     }
 
-    @Transactional
     public Long deportPopulation(Long fromId, Long toId) {
-        Population from = populationRepository.findByCityId(fromId)
-                .orElseThrow(() -> new NotFoundException("Город-источник не найден"));
-        Population to = populationRepository.findByCityId(toId)
-                .orElseThrow(() -> new NotFoundException("Город-назначение не найден"));
+        validateIds(fromId, toId);
 
-        Long movedCount = from.getCount();
-        to.setCount(to.getCount() + movedCount);
-        from.setCount(0L);
+        CityDto fromCityDto = cityServiceClient.getCityById(fromId);
+        CityDto toCityDto = cityServiceClient.getCityById(toId);
 
-        populationRepository.save(to);
-        populationRepository.save(from);
+        if (fromCityDto == null || toCityDto == null) {
+            throw new NotFoundException("Один или оба города не найдены");
+        }
+
+        Long movedCount = Long.valueOf(fromCityDto.getPopulation());
+
+        CityCreateRequestDto updateFrom = cityMapper.toCreateRequestDto(fromCityDto);
+        updateFrom.setPopulation(0);
+
+        CityCreateRequestDto updateTo = cityMapper.toCreateRequestDto(toCityDto);
+        updateTo.setPopulation(toCityDto.getPopulation() + movedCount.intValue());
+
+        cityServiceClient.updateCity(fromId, updateFrom);
+        cityServiceClient.updateCity(toId, updateTo);
 
         return movedCount;
     }
 
-    private Long getPopulationCount(Long cityId) {
-        return populationRepository.findByCityId(cityId)
-                .orElseThrow(() -> new NotFoundException("Город с id " + cityId + " не найден"))
-                .getCount();
+    private void validateIds(Long... ids) {
+        for (Long id : ids) {
+            if (id == null || id < 1) {
+                throw new BadRequestException("Неверный ID города");
+            }
+        }
     }
 }
