@@ -20,7 +20,10 @@ repositories {
 }
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation('org.apache.httpcomponents:httpclient:4.5.14') {
+        exclude group: 'org.apache.httpcomponents.client5', module: 'httpclient5'
+    }
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-data-rest")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
@@ -42,6 +45,10 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+configurations.configureEach {
+    exclude group: 'org.apache.httpcomponents.client5', module: 'httpclient5'
 }
 
 tasks.named('test') {

@@ -5,7 +5,6 @@ import itmo.populationservice.model.dto.CityDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 @Component
@@ -29,25 +28,26 @@ public class CityServiceClient {
     public CityDto getCityById(Long cityId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBasicAuth(cityServiceUser, cityServicePassword);
+        headers.setContentType(MediaType.APPLICATION_XML);
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         return restTemplate.exchange(
-                cityServiceUrl + "/api/v1/cities/" + cityId,
+                cityServiceUrl + "/cities/" + cityId,
                 HttpMethod.GET,
                 entity,
                 CityDto.class).getBody();
     }
 
-
     public void updateCity(Long cityId, CityCreateRequestDto cityDto) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBasicAuth(cityServiceUser, cityServicePassword);
+        headers.setContentType(MediaType.APPLICATION_XML);
 
         HttpEntity<CityCreateRequestDto> entity = new HttpEntity<>(cityDto, headers);
 
         restTemplate.exchange(
-                cityServiceUrl + "/api/v1/cities/" + cityId,
+                cityServiceUrl + "/cities/" + cityId,
                 HttpMethod.PUT,
                 entity,
                 Void.class);
