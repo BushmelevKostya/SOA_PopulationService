@@ -22,7 +22,9 @@ public class GenocideController {
             @PathVariable("id1") Long id1,
             @PathVariable("id2") Long id2,
             @PathVariable("id3") Long id3) {
-        return ResponseEntity.ok(populationService.calculateSum(id1, id2, id3));
+
+        Long result = populationService.calculateSum(id1, id2, id3);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping(
@@ -32,6 +34,8 @@ public class GenocideController {
     public ResponseEntity<Long> deportPopulation(
             @PathVariable("id-from") Long fromId,
             @PathVariable("id-to") Long toId) {
-        return ResponseEntity.ok(populationService.deportPopulation(fromId, toId));
+
+        Long result = populationService.deportPopulation(fromId, toId);
+        return ResponseEntity.ok(result);
     }
 }

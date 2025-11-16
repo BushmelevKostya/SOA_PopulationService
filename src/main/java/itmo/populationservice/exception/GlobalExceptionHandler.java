@@ -21,8 +21,8 @@ public class GlobalExceptionHandler {
         return buildXmlResponse("Ошибка в url запроса", HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(HttpServerErrorException.ServiceUnavailable.class)
-    public ResponseEntity<String> handleServiceUnavailable(HttpServerErrorException.ServiceUnavailable ex) {
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<String> handleServiceUnavailable(ServiceUnavailableException ex) {
         return buildXmlResponse("Сервис недоступен", HttpStatus.SERVICE_UNAVAILABLE);
     }
 
@@ -34,8 +34,8 @@ public class GlobalExceptionHandler {
 
     private ResponseEntity<String> buildXmlResponse(String message, HttpStatus status) {
         String body = "<message>" + message + "</message>";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_XML);
-        return new ResponseEntity<>(body, headers, status);
+        return ResponseEntity.status(status)
+                .header("Content-Type", "text/plain;charset=UTF-8")
+                .body(body);
     }
 }
