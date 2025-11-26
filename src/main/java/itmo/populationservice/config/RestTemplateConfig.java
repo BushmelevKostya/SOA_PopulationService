@@ -1,5 +1,6 @@
 package itmo.populationservice.config;
 
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -12,6 +13,7 @@ import java.security.cert.X509Certificate;
 public class RestTemplateConfig {
 
     @Bean
+    @LoadBalanced
     public RestTemplate restTemplate() throws Exception {
         disableSSLVerification();
 
