@@ -1,0 +1,5 @@
+# Проверить конфигурацию сервиса
+curl http://localhost:8888/population-service/default
+
+# Обновить конфигурацию без перезапуска сервиса
+curl -X POST http://localhost:5737/actuator/refresh

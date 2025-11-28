@@ -1,0 +1,36 @@
+spring:
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  mvc:
+    contentnegotiation:
+      favor-parameter: true
+      parameter-name: mediaType
+      media-types:
+        xml: application/xml
+        json: application/json
+      default-content-type: application/xml
+
+eureka:
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    root: INFO
+    org.springframework: INFO
+    org.springframework.web: DEBUG
+    org.springframework.cloud: DEBUG

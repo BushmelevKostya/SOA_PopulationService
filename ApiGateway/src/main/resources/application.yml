@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: configserver:http://localhost:8888
+  main:
+    allow-bean-definition-overriding: true
+
+server:
+  port: 8765
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# Отключаем проверки если они мешают
+spring.cloud.compatibility-verifier.enabled: false

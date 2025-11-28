@@ -1,0 +1,37 @@
+server:
+  port: 8765
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: population-service
+          uri: lb://population-service
+          predicates:
+            - Path=/population/**
+          filters:
+            - StripPrefix=1
+        - id: city-service
+          uri: lb://city-service
+          predicates:
+            - Path=/city/**
+          filters:
+            - StripPrefix=1
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+# Eureka Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
