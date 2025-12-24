@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://populationapi.com/soap"
+           xmlns:tns="http://populationapi.com/soap"
+           elementFormDefault="qualified">
+
+    <xs:simpleType name="errorCodeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="BAD_REQUEST"/>
+            <xs:enumeration value="NOT_FOUND"/>
+            <xs:enumeration value="SERVICE_UNAVAILABLE"/>
+            <xs:enumeration value="INTERNAL_ERROR"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="Error">
+        <xs:sequence>
+            <xs:element name="code" type="tns:errorCodeType"/>
+            <xs:element name="message" type="xs:string"/>
+            <xs:element name="timestamp" type="xs:dateTime"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="CalculatePopulationSumRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="cityId1" type="xs:long"/>
+                <xs:element name="cityId2" type="xs:long"/>
+                <xs:element name="cityId3" type="xs:long"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="DeportPopulationRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="sourceCityId" type="xs:long"/>
+                <xs:element name="targetCityId" type="xs:long"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="CalculatePopulationSumResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="populationSum" type="xs:long" minOccurs="0"/>
+                <xs:element name="error" type="tns:Error" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="DeportPopulationResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="movedPopulation" type="xs:long" minOccurs="0"/>
+                <xs:element name="error" type="tns:Error" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="GetCityRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="cityId" type="xs:long"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="City">
+        <xs:sequence>
+            <xs:element name="id" type="xs:long"/>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="population" type="xs:long"/>
+            <xs:element name="country" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="GetCityResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="city" type="tns:City" minOccurs="0"/>
+                <xs:element name="error" type="tns:Error" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>
