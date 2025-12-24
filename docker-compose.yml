@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # Config Server
+  config-service:
+    build:
+      context: ./ConfigServ
+      dockerfile: Dockerfile
+    container_name: config-service
+    ports:
+      - "8888:8888"
+    networks:
+      - soa-network
+    depends_on:
+      - postgres-config
+    environment:
+      - SERVER_PORT=8888
+      - SPRING_PROFILES_ACTIVE=native
+
+  # Eureka Server
+  eureka-service:
+    build:
+      context: ./EurekaService
+      dockerfile: Dockerfile
+    container_name: eureka-service
+    ports:
+      - "8761:8761"
+    networks:
+      - soa-network
+    depends_on:
+      - config-service
+    environment:
+      - SERVER_PORT=8761
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./ApiGateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8765:8765"
+    networks:
+      - soa-network
+    depends_on:
+      - config-service
+      - eureka-service
+    environment:
+      - SERVER_PORT=8765
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+
+  # Population Service
+  population-service:
+    build:
+      context: ./population-service
+      dockerfile: Dockerfile
+    container_name: population-service
+    ports:
+      - "5737:5737"
+    networks:
+      - soa-network
+    depends_on:
+      - config-service
+      - eureka-service
+      - postgres-population
+    environment:
+      - SERVER_PORT=5737
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-population:5432/db
+
+  # City Service
+  city-service:
+    build:
+      context: /Users/kbushmelev/Projects/SOA/SOA_CityService
+      dockerfile: Dockerfile
+    container_name: city-service
+    ports:
+      - "8443:8443"
+    networks:
+      - soa-network
+    environment:
+      - POSTGRES_URL=jdbc:postgresql://postgres-city:5432/db
+
+networks:
+  soa-network:
+    driver: bridge

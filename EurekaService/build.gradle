@@ -32,6 +32,11 @@ dependencyManagement {
     }
 }
 
+bootJar {
+    enabled = true
+    archiveClassifier = ''
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }

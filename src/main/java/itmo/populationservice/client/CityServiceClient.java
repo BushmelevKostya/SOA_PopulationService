@@ -1,6 +1,6 @@
 package itmo.populationservice.client;
 
-import itmo.populationservice.exception.BadRequestException;
+import  itmo.populationservice.exception.BadRequestException;
 import itmo.populationservice.exception.NotFoundException;
 import itmo.populationservice.exception.ServiceUnavailableException;
 import itmo.populationservice.model.dto.CityCreateRequestDto;
@@ -16,7 +16,7 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class CityServiceClient {
     private final RestTemplate restTemplate;
-    private final String cityServiceUrl;
+    private String cityServiceUrl;
     private final String cityServiceUser;
     private final String cityServicePassword;
 
@@ -35,6 +35,7 @@ public class CityServiceClient {
             HttpHeaders headers = new HttpHeaders();
             headers.setBasicAuth(cityServiceUser, cityServicePassword);
             headers.setContentType(MediaType.APPLICATION_XML);
+            cityServiceUrl = "http://127.0.0.1:8080/api/v1/";
 
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -81,4 +82,5 @@ public class CityServiceClient {
             throw new RuntimeException("Ошибка при обращении к CityService: " + e.getMessage());
         }
     }
+
 }

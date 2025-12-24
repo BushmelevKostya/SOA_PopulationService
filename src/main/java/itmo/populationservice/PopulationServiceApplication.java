@@ -35,4 +35,14 @@ public class PopulationServiceApplication extends SpringBootServletInitializer {
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         return application.sources(PopulationServiceApplication.class);
     }
+//    @Bean
+//    @LoadBalanced
+//    public RestTemplate lBRestTemplate() {
+//        return new RestTemplate();
+//    }
+//
+//    @Bean
+//    public RestTemplate restTemplate() {
+//        return new RestTemplate();
+//    }
 }

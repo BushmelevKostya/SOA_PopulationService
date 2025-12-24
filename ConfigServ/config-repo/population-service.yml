@@ -1,6 +1,3 @@
-server:
-  port: 5737
-
 spring:
   application:
     name: population-service
@@ -20,12 +17,19 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
 city:
   service:
-    url: https://127.0.0.1:8443/api/v1
+    url: http://127.0.0.1:8080/api/v1
     username: user
     password: password
+
+server:
+  port: 5737
+  ssl:
+    enabled: false
 
 # Eureka Configuration
 eureka:
@@ -40,3 +44,8 @@ management:
     web:
       exposure:
         include: "*"
+
+ribbon:
+  NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RoundRobinRule
+  ConnectTimeout: 3000
+  ReadTimeout: 10000

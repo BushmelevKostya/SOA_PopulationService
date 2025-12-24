@@ -15,5 +15,4 @@ management:
       exposure:
         include: "*"
 
-# Отключаем проверки если они мешают
 spring.cloud.compatibility-verifier.enabled: false

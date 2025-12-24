@@ -14,14 +14,20 @@ public class RestTemplateConfig {
 
     @Bean
     @LoadBalanced
-    public RestTemplate restTemplate() throws Exception {
-        disableSSLVerification();
-
+    public RestTemplate loadBalancedRestTemplate() {
         RestTemplate restTemplate = new RestTemplate();
 
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(3000);
+        factory.setReadTimeout(10000);
         restTemplate.setRequestFactory(factory);
 
+        return restTemplate;
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        RestTemplate restTemplate = new RestTemplate();
         return restTemplate;
     }
 

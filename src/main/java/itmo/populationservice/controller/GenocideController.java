@@ -24,6 +24,11 @@ public class GenocideController {
             @PathVariable("id3") Long id3) {
 
         Long result = populationService.calculateSum(id1, id2, id3);
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         return ResponseEntity.ok(result);
     }
 
