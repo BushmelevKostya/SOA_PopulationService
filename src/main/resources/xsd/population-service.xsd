@@ -13,11 +13,42 @@
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:complexType name="Error">
+    <xs:complexType name="Coordinates">
         <xs:sequence>
-            <xs:element name="code" type="tns:errorCodeType"/>
-            <xs:element name="message" type="xs:string"/>
-            <xs:element name="timestamp" type="xs:dateTime"/>
+            <xs:element name="x" type="xs:double"/>
+            <xs:element name="y" type="xs:double"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Human">
+        <xs:sequence>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="age" type="xs:int"/>
+            <xs:element name="height" type="xs:double"/>
+            <xs:element name="birthday" type="xs:dateTime" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="City">
+        <xs:sequence>
+            <xs:element name="id" type="xs:long"/>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="coordinates" type="tns:Coordinates" minOccurs="0"/>
+            <xs:element name="creationDate" type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="area" type="xs:long" minOccurs="0"/>
+            <xs:element name="population" type="xs:long"/>
+            <xs:element name="metersAboveSeaLevel" type="xs:double" minOccurs="0"/>
+            <xs:element name="carCode" type="xs:integer" minOccurs="0"/>
+            <xs:element name="climate" type="xs:string" minOccurs="0"/>
+            <xs:element name="standardOfLiving" type="xs:string" minOccurs="0"/>
+            <xs:element name="governor" type="tns:Human" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ServiceFault">
+        <xs:sequence>
+            <xs:element name="code" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -31,6 +62,14 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="CalculatePopulationSumResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="populationSum" type="xs:long"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
     <xs:element name="DeportPopulationRequest">
         <xs:complexType>
             <xs:sequence>
@@ -40,20 +79,10 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="CalculatePopulationSumResponse">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element name="populationSum" type="xs:long" minOccurs="0"/>
-                <xs:element name="error" type="tns:Error" minOccurs="0"/>
-            </xs:sequence>
-        </xs:complexType>
-    </xs:element>
-
     <xs:element name="DeportPopulationResponse">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="movedPopulation" type="xs:long" minOccurs="0"/>
-                <xs:element name="error" type="tns:Error" minOccurs="0"/>
+                <xs:element name="movedPopulation" type="xs:long"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -66,20 +95,27 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:complexType name="City">
-        <xs:sequence>
-            <xs:element name="id" type="xs:long"/>
-            <xs:element name="name" type="xs:string"/>
-            <xs:element name="population" type="xs:long"/>
-            <xs:element name="country" type="xs:string" minOccurs="0"/>
-        </xs:sequence>
-    </xs:complexType>
-
     <xs:element name="GetCityResponse">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="city" type="tns:City" minOccurs="0"/>
-                <xs:element name="error" type="tns:Error" minOccurs="0"/>
+                <xs:element name="city" type="tns:City"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="UpdateCityRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="cityId" type="xs:long"/>
+                <xs:element name="cityData" type="tns:City"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="UpdateCityResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>

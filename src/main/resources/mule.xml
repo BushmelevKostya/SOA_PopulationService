@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+        http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- HTTP Listener Configuration -->
+    <http:listener-config name="HTTP_Listener_config">
+        <http:listener-connection host="0.0.0.0" port="8081" basePath="/api/v1"/>
+    </http:listener-config>
+
+    <!-- Web Service Consumer Configuration для Population Service -->
+    <wsc:config name="Web_Service_Consumer_Config">
+        <wsc:connection wsdlLocation="https://127.0.0.1:5738/ws/population.wsdl"
+                        service="PopulationPortService"
+                        port="PopulationPortSoap11"
+                        address="https://127.0.0.1:5738/ws"/>
+    </wsc:config>
+
+    <!-- HTTP Request Configuration для City Service -->
+    <http:request-config name="HTTP_Request_configuration">
+        <http:request-connection host="127.0.0.1" port="5736" basePath="/api/v1">
+            <http:authentication>
+                <http:basic-authentication username="user" password="password"/>
+            </http:authentication>
+        </http:request-connection>
+    </http:request-config>
+
+    <!-- Flow для расчета суммарного населения -->
+    <flow name="calculatePopulationSum">
+        <http:listener config-ref="HTTP_Listener_config"
+                       path="/population/count/{id1}/{id2}/{id3}"
+                       allowedMethods="GET"/>
+
+        <!-- Преобразование REST в SOAP запрос -->
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns ns0 http://populationapi.com/soap
+---
+{
+    ns0#CalculatePopulationSumRequest: {
+        ns0#cityId1: attributes.uriParams.id1 as Number,
+        ns0#cityId2: attributes.uriParams.id2 as Number,
+        ns0#cityId3: attributes.uriParams.id3 as Number
+    }
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <!-- Вызов Population Service SOAP -->
+        <wsc:consume operation="CalculatePopulationSum"
+                     config-ref="Web_Service_Consumer_Config"/>
+
+        <!-- Преобразование SOAP ответа в REST JSON -->
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+ns ns0 http://populationapi.com/soap
+output application/json
+---
+{
+    "populationSum": payload.body.ns0#CalculatePopulationSumResponse.ns0#populationSum
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <!-- Обработка ошибок -->
+        <error-handler>
+            <on-error-propagate type="ANY">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "error": "Service unavailable",
+    "message": error.description,
+    "timestamp": now()
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+
+    <!-- Flow для депортации населения -->
+    <flow name="deportPopulation">
+        <http:listener config-ref="HTTP_Listener_config"
+                       path="/population/deport/{fromId}/{toId}"
+                       allowedMethods="POST"/>
+
+        <!-- Преобразование REST в SOAP запрос -->
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns ns0 http://populationapi.com/soap
+---
+{
+    ns0#DeportPopulationRequest: {
+        ns0#sourceCityId: attributes.uriParams.fromId as Number,
+        ns0#targetCityId: attributes.uriParams.toId as Number
+    }
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <!-- Вызов Population Service SOAP -->
+        <wsc:consume operation="DeportPopulation"
+                     config-ref="Web_Service_Consumer_Config"/>
+
+        <!-- Преобразование SOAP ответа в REST JSON -->
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+ns ns0 http://populationapi.com/soap
+output application/json
+---
+{
+    "movedPopulation": payload.body.ns0#DeportPopulationResponse.ns0#movedPopulation
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <!-- Обработка ошибок -->
+        <error-handler>
+            <on-error-propagate type="ANY">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "error": "Service unavailable",
+    "message": error.description,
+    "timestamp": now()
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+
+    <!-- Health check endpoint -->
+    <flow name="healthCheck">
+        <http:listener config-ref="HTTP_Listener_config" path="/health" allowedMethods="GET"/>
+        <set-payload value='{"status": "Mule ESB proxy is running"}'/>
+    </flow>
+</mule>

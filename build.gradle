@@ -1,8 +1,8 @@
 plugins {
     id 'java'
     id 'war'
-    id 'org.springframework.boot' version '3.5.7'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version '2.7.4'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
 }
 
 group = 'itmo'
@@ -10,9 +10,8 @@ version = '0.0.1-SNAPSHOT'
 description = 'PopulationService'
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 repositories {
@@ -20,82 +19,25 @@ repositories {
 }
 
 dependencies {
-    // ✅ ОСНОВНЫЕ ДЛЯ SOAP
     implementation 'org.springframework.boot:spring-boot-starter-web-services'
-    implementation 'wsdl4j:wsdl4j'  // Для работы с WSDL
-
-    // ✅ JAXB для генерации классов из XSD (совместимость с Spring Boot 3)
-    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
-    implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.2'
-
-    // ✅ База данных (оставляем, если используется)
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    runtimeOnly 'org.postgresql:postgresql'
-
-    // ✅ Валидация (полезно для SOAP)
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-
-    // ✅ Безопасность (оставляем, если нужно)
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
-    // ✅ Утилиты
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'wsdl4j:wsdl4j:1.6.3'
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
+    implementation 'javax.activation:activation:1.1.1'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
 
-    // ✅ Development
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    runtimeOnly 'org.postgresql:postgresql'
 
-    // ✅ Testing
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    // ✅ Для WAR deployment
-    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
-}
-
-// Конфигурация для генерации классов из XSD
-configurations {
-    jaxb
-}
-
-// Задача для генерации Java классов из XSD
-task genJaxb {
-    ext.sourcesDir = "${buildDir}/generated-sources/jaxb"
-    ext.schema = "src/main/resources/xsd/population-service.xsd"
-
-    doLast {
-        project.ant {
-            taskdef name: "xjc", classname: "com.sun.tools.xjc.XJCTask",
-                    classpath: configurations.jaxb.asPath
-            mkdir(dir: sourcesDir)
-
-            xjc(destdir: sourcesDir, schema: schema,
-                    package: "itmo.populationservice.soap") {
-                arg(value: "-wsdl")
-                produces(dir: sourcesDir, includes: "**/*.java")
-            }
-        }
-    }
-}
-
-// Добавляем сгенерированные источники в classpath
-sourceSets {
-    main {
-        java {
-            srcDir "${buildDir}/generated-sources/jaxb"
-        }
-    }
-}
-
-// Зависимости для компиляции
-compileJava.dependsOn genJaxb
-
-// Конфигурация зависимостей для JAXB
-dependencies {
-    jaxb 'com.sun.xml.bind:jaxb-xjc:4.0.2'
-    jaxb 'com.sun.xml.bind:jaxb-impl:4.0.2'
-    jaxb 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
 }
 
 configurations.configureEach {
@@ -115,3 +57,47 @@ war {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// Конфигурация для генерации классов из XSD
+configurations {
+    jaxb
+}
+
+// Задача для генерации Java классов из XSD
+task genJaxb {
+    doLast {
+        project.mkdir('src/main/generated')
+
+        ant.taskdef(
+                name: 'xjc',
+                classname: 'com.sun.tools.xjc.XJCTask',
+                classpath: configurations.jaxb.asPath
+        )
+
+        ant.xjc(
+                destdir: 'src/main/generated',
+                schema: 'src/main/resources/xsd/population-service.xsd',
+                package: 'itmo.populationservice.soap'
+        )
+    }
+}
+
+// Добавляем сгенерированные источники
+sourceSets {
+    main {
+        java {
+            srcDirs += ['src/main/generated']
+        }
+    }
+}
+
+// Зависимости для JAXB генерации
+dependencies {
+    jaxb 'com.sun.xml.bind:jaxb-xjc:2.3.1'
+    jaxb 'com.sun.xml.bind:jaxb-impl:2.3.1'
+    jaxb 'javax.xml.bind:jaxb-api:2.3.1'
+    jaxb 'com.sun.istack:istack-commons-runtime:3.0.7'
+}
+
+// Генерация классов перед компиляцией
+compileJava.dependsOn genJaxb

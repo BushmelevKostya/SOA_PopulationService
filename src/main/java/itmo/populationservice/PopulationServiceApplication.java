@@ -12,6 +12,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class PopulationServiceApplication extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
+        System.setProperty("javax.net.ssl.trustStore", "/Users/kbushmelev/Projects/SOA/SOA_PopulationService/city-truststore.jks");
+        System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
 		SpringApplication.run(PopulationServiceApplication.class, args);
 	}
 
