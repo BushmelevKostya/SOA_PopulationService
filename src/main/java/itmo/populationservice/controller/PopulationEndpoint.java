@@ -31,7 +31,6 @@ public class PopulationEndpoint {
         log.info("Calculating population sum for cities: {}, {}, {}",
                 request.getCityId1(), request.getCityId2(), request.getCityId3());
 
-        // Валидация параметров согласно OpenAPI (minimum: 1)
         if (request.getCityId1() < 1 || request.getCityId2() < 1 || request.getCityId3() < 1) {
             log.warn("Invalid city IDs: {}, {}, {}",
                     request.getCityId1(), request.getCityId2(), request.getCityId3());
