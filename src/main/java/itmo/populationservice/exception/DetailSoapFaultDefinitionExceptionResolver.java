@@ -3,7 +3,6 @@ package itmo.populationservice.exception;
 import org.springframework.ws.soap.SoapFault;
 import org.springframework.ws.soap.SoapFaultDetail;
 import org.springframework.ws.soap.server.endpoint.SoapFaultMappingExceptionResolver;
-import org.springframework.ws.soap.server.endpoint.SoapFaultDefinition;
 
 import javax.xml.namespace.QName;
 
@@ -14,13 +13,33 @@ public class DetailSoapFaultDefinitionExceptionResolver extends SoapFaultMapping
 
     @Override
     protected void customizeFault(Object endpoint, Exception ex, SoapFault fault) {
+        logger.warn("Exception processed: " + ex.getClass().getName() + " - " + ex.getMessage());
+
+        String code = "500";
+        String description = "Непредвиденная ошибка";
+
         if (ex instanceof ServiceFaultException) {
             ServiceFault serviceFault = ((ServiceFaultException) ex).getServiceFault();
-            SoapFaultDetail detail = fault.addFaultDetail();
-            detail.addFaultDetailElement(CODE).addText(serviceFault.getCode());
-            detail.addFaultDetailElement(DESCRIPTION).addText(serviceFault.getDescription());
-        } else {
-            super.customizeFault(endpoint, ex, fault);
+            code = serviceFault.getCode();
+            description = serviceFault.getDescription();
+
+            logger.info("ServiceFaultException - Code: {}, Description: {}" + code + " " + description);
+
+        } else if (ex instanceof NotFoundException) {
+            code = "404";
+            description = ex.getMessage();
+        } else if (ex instanceof BadRequestException) {
+            code = "400";
+            description = ex.getMessage();
+        } else if (ex instanceof ServiceUnavailableException) {
+            code = "503";
+            description = ex.getMessage();
         }
+
+        SoapFaultDetail detail = fault.addFaultDetail();
+        detail.addFaultDetailElement(CODE).addText(code);
+        detail.addFaultDetailElement(DESCRIPTION).addText(description);
+
+        logger.info("SOAP Fault detail added - Code: {}, Description: {}" + code + " " + description);
     }
 }

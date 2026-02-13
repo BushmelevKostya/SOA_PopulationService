@@ -14,6 +14,7 @@ import org.springframework.ws.wsdl.wsdl11.DefaultWsdl11Definition;
 import org.springframework.xml.xsd.SimpleXsdSchema;
 import org.springframework.xml.xsd.XsdSchema;
 import itmo.populationservice.exception.DetailSoapFaultDefinitionExceptionResolver;
+import itmo.populationservice.exception.ServiceFaultException;
 
 import java.util.Properties;
 
@@ -23,7 +24,7 @@ public class WebServiceConfig extends WsConfigurerAdapter {
 
     @Bean
     public SoapFaultMappingExceptionResolver exceptionResolver(){
-        DetailSoapFaultDefinitionExceptionResolver exceptionResolver = new DetailSoapFaultDefinitionExceptionResolver();
+        SoapFaultMappingExceptionResolver exceptionResolver = new DetailSoapFaultDefinitionExceptionResolver();
 
         SoapFaultDefinition faultDefinition = new SoapFaultDefinition();
         faultDefinition.setFaultCode(SoapFaultDefinition.SERVER);
@@ -31,6 +32,7 @@ public class WebServiceConfig extends WsConfigurerAdapter {
 
         Properties errorMappings = new Properties();
         errorMappings.setProperty(Exception.class.getName(), SoapFaultDefinition.SERVER.toString());
+        errorMappings.setProperty(ServiceFaultException.class.getName(), SoapFaultDefinition.SERVER.toString());
         exceptionResolver.setExceptionMappings(errorMappings);
         exceptionResolver.setOrder(1);
         return exceptionResolver;

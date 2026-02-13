@@ -1,6 +1,10 @@
 package itmo.populationservice.controller;
 
 import itmo.populationservice.client.CityServiceSoapClient;
+import itmo.populationservice.exception.ServiceFault;
+import itmo.populationservice.exception.ServiceFaultException;
+import itmo.populationservice.service.PopulationService;
+import itmo.populationservice.soap.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,14 +12,10 @@ import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
-import itmo.populationservice.service.PopulationService;
-import itmo.populationservice.soap.*;
-import itmo.populationservice.exception.ServiceFault;
-import itmo.populationservice.exception.ServiceFaultException;
 
 @Endpoint
 public class PopulationEndpoint {
-    private static final Logger log = LoggerFactory.getLogger(CityServiceSoapClient.class);
+    private static final Logger log = LoggerFactory.getLogger(PopulationEndpoint.class);
     private static final String NAMESPACE_URI = "http://populationapi.com/soap";
     private final PopulationService populationService;
 
@@ -27,13 +27,13 @@ public class PopulationEndpoint {
     @PayloadRoot(namespace = NAMESPACE_URI, localPart = "CalculatePopulationSumRequest")
     @ResponsePayload
     public CalculatePopulationSumResponse calculatePopulationSum(@RequestPayload CalculatePopulationSumRequest request) {
-
         log.info("Calculating population sum for cities: {}, {}, {}",
                 request.getCityId1(), request.getCityId2(), request.getCityId3());
 
         if (request.getCityId1() < 1 || request.getCityId2() < 1 || request.getCityId3() < 1) {
             log.warn("Invalid city IDs: {}, {}, {}",
                     request.getCityId1(), request.getCityId2(), request.getCityId3());
+
             throw new ServiceFaultException("BadRequest", new ServiceFault("400", "Ошибка в url запроса"));
         }
 
@@ -65,7 +65,6 @@ public class PopulationEndpoint {
     @PayloadRoot(namespace = NAMESPACE_URI, localPart = "DeportPopulationRequest")
     @ResponsePayload
     public DeportPopulationResponse deportPopulation(@RequestPayload DeportPopulationRequest request) {
-
         log.info("Deporting population from city {} to city {}",
                 request.getSourceCityId(), request.getTargetCityId());
 

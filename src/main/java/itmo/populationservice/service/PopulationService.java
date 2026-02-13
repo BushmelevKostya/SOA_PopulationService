@@ -4,13 +4,18 @@ import itmo.populationservice.client.CityServiceSoapClient;
 import itmo.populationservice.exception.BadRequestException;
 import itmo.populationservice.exception.NotFoundException;
 import itmo.populationservice.exception.ServiceUnavailableException;
+import itmo.populationservice.exception.ServiceFaultException;
+import itmo.populationservice.exception.ServiceFault;
 import itmo.populationservice.soap.City;
 import itmo.populationservice.soap.Coordinates;
 import itmo.populationservice.soap.Human;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class PopulationService {
+    private static final Logger log = LoggerFactory.getLogger(PopulationService.class);
     private final CityServiceSoapClient cityServiceClient;
 
     public PopulationService(CityServiceSoapClient cityServiceClient) {
@@ -30,7 +35,15 @@ public class PopulationService {
             }
 
             return city1.getPopulation() + city2.getPopulation() + city3.getPopulation();
+
+        } catch (ServiceFaultException e) {
+            log.error("Service fault when calculating sum: {}", e.getServiceFault().getDescription());
+            throw e;
+        } catch (NotFoundException e) {
+            log.error("Cities not found: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
+            log.error("Unexpected error in calculateSum", e);
             throw new ServiceUnavailableException("Сервис недоступен");
         }
     }
@@ -58,7 +71,15 @@ public class PopulationService {
             cityServiceClient.updateCity(toId, updateTo);
 
             return movedCount;
+
+        } catch (ServiceFaultException e) {
+            log.error("Service fault when deporting: {}", e.getServiceFault().getDescription());
+            throw e;
+        } catch (NotFoundException e) {
+            log.error("Cities not found: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
+            log.error("Unexpected error in deportPopulation", e);
             throw new ServiceUnavailableException("Сервис недоступен");
         }
     }
